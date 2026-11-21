@@ -1,0 +1,50 @@
+<div class="container py-4">
+  <div class="p-4 p-md-5 mb-4 rounded-4 bg-dark text-white shadow-sm">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <span class="badge bg-primary mb-2">Activité Pratique Angular 19 &amp; Spring Boot</span>
+        <h1 class="display-6 fw-bold mb-3">Application de Gestion de Catalogue Produits</h1>
+        <p class="lead text-light-emphasis mb-4">
+          Gérez votre catalogue produits en temps réel grâce à une architecture Angular 19 Standalone
+          connectée à une API REST Spring Boot (port 8083) avec configuration CORS.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a routerLink="/products" class="btn btn-primary btn-lg">
+            <i class="bi bi-box-seam me-2"></i>Voir le catalogue
+          </a>
+          <a routerLink="/new-product" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>Ajouter un produit
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-4 text-center d-none d-lg-block">
+        <div class="p-4 rounded-4 bg-secondary bg-opacity-25 border border-secondary">
+          <i class="bi bi-layers display-1 text-primary"></i>
+          <p class="mt-3 mb-0 small text-light">Frontend :4200 &harr; Backend :8083</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="h4 fw-semibold mb-3">
+    <i class="bi bi-mortarboard me-2 text-primary"></i>Objectifs Pédagogiques Couverts
+  </h2>
+
+  <div class="row g-3">
+    @for (obj of objectives; track obj.title) {
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center gap-3 mb-2">
+              <div class="rounded-3 bg-light p-2">
+                <i class="bi fs-4" [class]="obj.icon + ' ' + obj.color"></i>
+              </div>
+              <h3 class="h6 fw-bold mb-0">{{ obj.title }}</h3>
+            </div>
+            <p class="card-text text-muted small mb-0">{{ obj.description }}</p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

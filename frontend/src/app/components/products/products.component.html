@@ -1,0 +1,223 @@
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">
+        <i class="bi bi-box-seam text-primary me-2"></i>Catalogue Produits
+      </h1>
+      <p class="text-muted small mb-0">
+        Données synchronisées avec l'API Spring Boot (<code>http://localhost:8083/api/products</code>)
+      </p>
+    </div>
+    <a routerLink="/new-product" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-2"></i>Nouveau Produit
+    </a>
+  </div>
+
+  <!-- Statistiques rapides -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-muted small">Total Produits</div>
+            <div class="fs-4 fw-bold">{{ products.length }}</div>
+          </div>
+          <i class="bi bi-boxes fs-2 text-primary opacity-75"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-muted small">Produits Sélectionnés</div>
+            <div class="fs-4 fw-bold text-warning">{{ selectedCount }}</div>
+          </div>
+          <i class="bi bi-star-fill fs-2 text-warning opacity-75"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-muted small">Valeur du Stock</div>
+            <div class="fs-4 fw-bold text-success">{{ totalStockValue | currency:'EUR':'symbol':'1.2-2' }}</div>
+          </div>
+          <i class="bi bi-cash-stack fs-2 text-success opacity-75"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre de recherche et filtres -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-center">
+        <div class="col-lg-6">
+          <form (ngSubmit)="onSearch()" class="input-group">
+            <span class="input-group-text bg-white">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Rechercher un produit par nom..."
+              [(ngModel)]="keyword"
+              name="keyword"
+            />
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+            @if (keyword) {
+              <button type="button" class="btn btn-outline-secondary" (click)="resetSearch()" title="Réinitialiser">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
+          </form>
+        </div>
+        <div class="col-lg-6 d-flex justify-content-lg-end flex-wrap gap-2">
+          <div class="btn-group" role="group" aria-label="Filtrer les produits">
+            <button
+              type="button"
+              class="btn"
+              [class.btn-dark]="filterMode === 'all'"
+              [class.btn-outline-dark]="filterMode !== 'all'"
+              (click)="filterMode = 'all'"
+            >
+              Tous
+            </button>
+            <button
+              type="button"
+              class="btn"
+              [class.btn-warning]="filterMode === 'selected'"
+              [class.btn-outline-warning]="filterMode !== 'selected'"
+              (click)="filterMode = 'selected'"
+            >
+              <i class="bi bi-star-fill me-1"></i>Sélectionnés
+            </button>
+            <button
+              type="button"
+              class="btn"
+              [class.btn-danger]="filterMode === 'outOfStock'"
+              [class.btn-outline-danger]="filterMode !== 'outOfStock'"
+              (click)="filterMode = 'outOfStock'"
+            >
+              Rupture de stock
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (actionMessage) {
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <span>{{ actionMessage }}</span>
+      <button type="button" class="btn-close" (click)="actionMessage = null" aria-label="Fermer"></button>
+    </div>
+  }
+
+  <!-- Affichage conditionnel avec @if / @else if / @else -->
+  @if (isLoading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      <p class="text-muted mt-3 mb-0">Chargement des produits en cours...</p>
+    </div>
+  } @else if (errorMessage) {
+    <div class="alert alert-danger d-flex align-items-start gap-3 shadow-sm" role="alert">
+      <i class="bi bi-exclamation-triangle-fill fs-4 mt-1"></i>
+      <div class="flex-grow-1">
+        <h2 class="h6 fw-bold mb-1">Erreur de communication avec le backend</h2>
+        <p class="mb-2 small">{{ errorMessage }}</p>
+        <button class="btn btn-sm btn-outline-danger" (click)="loadProducts()">
+          <i class="bi bi-arrow-clockwise me-1"></i>Réessayer
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="card border-0 shadow-sm overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Nom</th>
+              <th>Catégorie</th>
+              <th class="text-end">Prix</th>
+              <th class="text-center">Quantité</th>
+              <th class="text-center">Sélection</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of filteredProducts; track product.id) {
+              <tr>
+                <td class="text-muted fw-semibold">{{ product.id }}</td>
+                <td class="fw-medium">{{ product.name }}</td>
+                <td>
+                  <span class="badge bg-secondary-subtle text-secondary-emphasis">
+                    {{ product.category || 'Général' }}
+                  </span>
+                </td>
+                <td class="text-end fw-semibold">
+                  {{ product.price | currency:'EUR':'symbol':'1.2-2' }}
+                </td>
+                <td class="text-center">
+                  @if (product.quantity > 0) {
+                    <span class="badge bg-success-subtle text-success-emphasis">
+                      {{ product.quantity }} en stock
+                    </span>
+                  } @else {
+                    <span class="badge bg-danger-subtle text-danger-emphasis">
+                      Rupture
+                    </span>
+                  }
+                </td>
+                <td class="text-center">
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-warning]="product.selected"
+                    [class.btn-outline-secondary]="!product.selected"
+                    (click)="onToggleSelected(product)"
+                    [title]="product.selected ? 'Retirer de la sélection' : 'Sélectionner'"
+                  >
+                    <i class="bi" [class.bi-star-fill]="product.selected" [class.bi-star]="!product.selected"></i>
+                  </button>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <a
+                      [routerLink]="['/edit-product', product.id]"
+                      class="btn btn-outline-primary"
+                      title="Modifier"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <button
+                      type="button"
+                      class="btn btn-outline-danger"
+                      (click)="onDeleteProduct(product)"
+                      title="Supprimer"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox display-5 d-block mb-2"></i>
+                  Aucun produit trouvé pour ce filtre.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
